@@ -1,6 +1,3 @@
-# Large auto-generated assets (images are already stored as BLOBs in the DB)
-assets/
-
 # Empty stub DB inside the package
 tuf_scraper/tuf.db
 

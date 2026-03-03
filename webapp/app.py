@@ -245,33 +245,33 @@ def article(request: Request, article_id: str, back: Optional[str] = None):
 def serve_image(article_id: str, order_idx: int):
     with get_db() as db:
         row = db.execute(
-            "SELECT content, src_url FROM article_images WHERE article_id=? AND order_idx=?",
+            "SELECT local_path, src_url FROM article_images WHERE article_id=? AND order_idx=?",
             (article_id, order_idx)
         ).fetchone()
-    if not row or not row["content"]:
+    if not row:
         raise HTTPException(404, "Image not found")
-    # detect content type from magic bytes (reliable, extension-free URLs)
-    data = row["content"]
-    if data[:8] == b'\x89PNG\r\n\x1a\n':
-        ctype = "image/png"
-    elif data[:2] == b'\xff\xd8':
-        ctype = "image/jpeg"
-    elif data[:4] == b'RIFF' and data[8:12] == b'WEBP':
-        ctype = "image/webp"
-    elif data[:3] == b'GIF':
-        ctype = "image/gif"
-    elif b'<svg' in data[:64]:
-        ctype = "image/svg+xml"
-    else:
-        # fall back to URL extension
-        url = (row["src_url"] or "").lower()
-        if url.endswith(".png"):   ctype = "image/png"
-        elif url.endswith(".gif"): ctype = "image/gif"
-        elif url.endswith(".webp"):ctype = "image/webp"
-        elif url.endswith(".svg"): ctype = "image/svg+xml"
-        else:                      ctype = "image/jpeg"
-    return Response(content=data, media_type=ctype,
-                    headers={"Cache-Control": "max-age=86400"})
+    # Serve from local filesystem when available
+    local = row["local_path"]
+    if local and os.path.exists(local):
+        ext = os.path.splitext(local)[1].lower().lstrip(".")
+        ctype = {
+            "webp": "image/webp",
+            "png":  "image/png",
+            "jpg":  "image/jpeg",
+            "jpeg": "image/jpeg",
+            "gif":  "image/gif",
+            "svg":  "image/svg+xml",
+        }.get(ext, "image/webp")
+        with open(local, "rb") as f:
+            data = f.read()
+        return Response(content=data, media_type=ctype,
+                        headers={"Cache-Control": "public, max-age=31536000"})
+    # Fallback: redirect to original source URL
+    src = row["src_url"]
+    if src:
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(url=src, status_code=302)
+    raise HTTPException(404, "Image not found")
 
 
 # ── Interview experience routes ────────────────────────────────────────────────
