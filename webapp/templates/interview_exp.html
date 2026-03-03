@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+{% block title %}{{ extra.get('position', 'Experience') }} @ {{ extra.get('company', '') }} — TUF Archive{% endblock %}
+
+{% block header_extra %}
+<a href="/interviews" class="text-slate-500 hover:text-slate-300 text-sm transition-colors">Interviews</a>
+<span class="text-slate-700">/</span>
+{% if extra.get('company') %}
+<a href="/interviews?company={{ extra['company'] | urlencode }}"
+   class="text-slate-500 hover:text-slate-300 text-sm transition-colors">{{ extra['company'] }}</a>
+<span class="text-slate-700">/</span>
+{% endif %}
+<span class="text-slate-300 text-sm truncate max-w-xs">{{ extra.get('position', '?') }}</span>
+{% endblock %}
+
+{% block content %}
+{% include "article_styles.html" %}
+
+<div class="max-w-4xl mx-auto">
+
+  <!-- Back -->
+  <a href="/interviews{% if extra.get('company') %}?company={{ extra['company'] | urlencode }}{% endif %}"
+     class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white mb-6 transition-colors group">
+    <i data-lucide="arrow-left" class="w-4 h-4 group-hover:-translate-x-0.5 transition-transform"></i>
+    Back to {{ extra.get('company', 'Interviews') }}
+  </a>
+
+  <article class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+
+    <!-- Header -->
+    <div class="px-8 py-8 border-b border-slate-800 bg-gradient-to-br from-slate-900 to-slate-900/60">
+      <div class="flex items-start gap-4">
+
+        <!-- Company logo -->
+        {% if extra.get('company_logo') %}
+        <img src="{{ extra['company_logo'] }}" alt="{{ extra.get('company','') }}"
+             class="w-14 h-14 rounded-xl object-contain bg-slate-800 p-1 border border-slate-700 shrink-0">
+        {% else %}
+        <div class="w-14 h-14 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center shrink-0">
+          <i data-lucide="building-2" class="w-6 h-6 text-slate-500"></i>
+        </div>
+        {% endif %}
+
+        <div class="flex-1 min-w-0">
+          <!-- Company + position + status -->
+          <div class="flex flex-wrap items-center gap-2 mb-1">
+            <span class="text-sm text-slate-400 font-medium">{{ extra.get('company', prob.company_name or '') }}</span>
+            {% set status = extra.get('status', '') %}
+            {% if status == 'Selected' %}
+            <span class="text-xs px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/20 font-semibold">✓ Selected</span>
+            {% elif status == 'Rejected' %}
+            <span class="text-xs px-2.5 py-1 rounded-full bg-red-500/15 text-red-400 ring-1 ring-red-500/20 font-semibold">✗ Rejected</span>
+            {% elif status %}
+            <span class="text-xs px-2.5 py-1 rounded-full bg-slate-700 text-slate-300 font-medium">{{ status }}</span>
+            {% endif %}
+            {% if extra.get('linkedin') %}
+            <a href="{{ extra['linkedin'] }}" target="_blank"
+               class="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 transition-colors">
+              <i data-lucide="linkedin" class="w-3 h-3"></i>LinkedIn
+            </a>
+            {% endif %}
+          </div>
+
+          <h1 class="text-2xl lg:text-3xl font-bold text-white leading-snug">
+            {{ extra.get('position', '?') }}
+          </h1>
+
+          <!-- Tags -->
+          {% if extra.get('tags') %}
+          <div class="flex flex-wrap gap-2 mt-3">
+            {% for tag in extra['tags'] %}
+            <span class="text-xs bg-slate-800/80 text-slate-300 px-2.5 py-1 rounded-full border border-slate-700">{{ tag }}</span>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Side stats -->
+        <div class="text-right space-y-2 shrink-0 hidden sm:block">
+          {% if extra.get('rounds') %}
+          <div class="text-sm text-slate-400">
+            <span class="font-semibold text-white">{{ extra['rounds'] }}</span> rounds
+          </div>
+          {% endif %}
+          {% if extra.get('problems_count') %}
+          <div class="text-sm text-slate-400">
+            <span class="font-semibold text-white">{{ extra['problems_count'] }}</span> problems
+          </div>
+          {% endif %}
+          {% if extra.get('upvotes') %}
+          <div class="flex items-center gap-1.5 justify-end text-sm text-slate-400">
+            <i data-lucide="thumbs-up" class="w-3.5 h-3.5"></i>
+            <span class="font-semibold text-white">{{ extra['upvotes'] }}</span>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Author row -->
+      {% set author = extra.get('author', {}) %}
+      {% if author or extra.get('posted_time') %}
+      <div class="flex items-center gap-3 mt-5 pt-5 border-t border-slate-800">
+        <div class="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center">
+          <i data-lucide="user" class="w-3.5 h-3.5 text-slate-400"></i>
+        </div>
+        <div>
+          {% if author.get('name') %}
+          <span class="text-sm text-white font-medium">{{ author['name'] }}</span>
+          {% endif %}
+          {% if author.get('role') %}
+          <span class="text-xs text-slate-500 ml-2">{{ author['role'] }}</span>
+          {% endif %}
+        </div>
+        {% if extra.get('posted_time') %}
+        <span class="ml-auto text-xs text-slate-600">{{ extra['posted_time'] }}</span>
+        {% endif %}
+        {% if extra.get('slug') %}
+        <a href="https://takeuforward.org/interview/{{ extra['slug'] }}" target="_blank"
+           class="text-xs text-slate-500 hover:text-slate-300 flex items-center gap-1 transition-colors">
+          <i data-lucide="external-link" class="w-3 h-3"></i>TUF
+        </a>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Body -->
+    <div class="px-8 lg:px-12 py-10">
+
+      {% if art_html %}
+      <!-- Full scraped article -->
+      <div class="article-body">
+        {{ art_html | safe }}
+      </div>
+
+      {% elif extra.get('description') %}
+      <!-- Description from API (short summary with tips) -->
+      <div class="article-body">
+        <div class="bg-blue-500/5 border border-blue-500/20 rounded-xl p-5 mb-6">
+          <div class="flex items-center gap-2 text-blue-400 text-sm font-semibold mb-3">
+            <i data-lucide="info" class="w-4 h-4"></i>
+            Quick Takeaways
+          </div>
+          {{ extra['description'] | safe }}
+        </div>
+        <div class="text-center py-8 text-slate-500">
+          <p class="mb-4 text-sm">Full experience not yet scraped.</p>
+          <a href="https://takeuforward.org/interview/{{ extra.get('slug', '') }}" target="_blank"
+             class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors">
+            <i data-lucide="external-link" class="w-4 h-4"></i>
+            Read full experience on TUF
+          </a>
+        </div>
+      </div>
+
+      {% else %}
+      <div class="text-center py-20 text-slate-500">
+        <i data-lucide="file-x" class="w-12 h-12 mx-auto mb-4 opacity-30"></i>
+        <p class="mb-4">Content not available offline.</p>
+        {% if extra.get('slug') %}
+        <a href="https://takeuforward.org/interview/{{ extra['slug'] }}" target="_blank"
+           class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors">
+          <i data-lucide="external-link" class="w-4 h-4"></i>
+          Read on TUF
+        </a>
+        {% endif %}
+      </div>
+      {% endif %}
+
+    </div>
+  </article>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+/* Re-apply language tabs for any code blocks in experience articles */
+const LANG_NAMES = {
+  cpp:'C++',c:'C',java:'Java',python:'Python',python3:'Python',
+  javascript:'JS',typescript:'TS',go:'Go',rust:'Rust',kotlin:'Kotlin',
+  swift:'Swift',cs:'C#',csharp:'C#',ruby:'Ruby',php:'PHP',bash:'Bash',
+};
+document.querySelectorAll('.code-content').forEach(function(content) {
+  var blocks = Array.from(content.querySelectorAll('.code-block'));
+  if (!blocks.length) return;
+  var tabBar = document.createElement('div');
+  tabBar.className = 'lang-tabs-bar';
+  blocks.forEach(function(block, idx) {
+    var lang = block.dataset.lang || 'code';
+    var label = LANG_NAMES[lang.toLowerCase()] || lang.toUpperCase();
+    var tab = document.createElement('button');
+    tab.className = 'lang-tab' + (block.classList.contains('dsa_article_code_active') ? ' active' : '');
+    tab.textContent = label;
+    tab.addEventListener('click', function() {
+      blocks.forEach(function(b) { b.classList.remove('dsa_article_code_active'); });
+      tabBar.querySelectorAll('.lang-tab').forEach(function(t) { t.classList.remove('active'); });
+      blocks[idx].classList.add('dsa_article_code_active');
+      tab.classList.add('active');
+    });
+    tabBar.appendChild(tab);
+  });
+  content.parentNode.insertBefore(tabBar, content);
+});
+document.querySelectorAll('.code-tabs').forEach(function(el) { el.style.display='none'; });
+</script>
+{% endblock %}

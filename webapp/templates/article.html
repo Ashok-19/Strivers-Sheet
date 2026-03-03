@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %}{{ art.title or 'Article' }} — TUF Archive{% endblock %}
+
+{% block header_extra %}
+{% if prob %}
+<a href="/problems/{{ prob.source_id }}" class="text-slate-500 hover:text-slate-300 text-sm transition-colors">{{ prob.source_name }}</a>
+<span class="text-slate-700">/</span>
+<span class="text-slate-300 text-sm truncate max-w-xs">{{ art.title }}</span>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+{% include "article_styles.html" %}
+
+<div class="max-w-4xl mx-auto">
+
+  <!-- Back button -->
+  {% if prob %}
+  <a href="/problems/{{ prob.source_id }}"
+     class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white mb-6 transition-colors group">
+    <i data-lucide="arrow-left" class="w-4 h-4 group-hover:-translate-x-0.5 transition-transform"></i>
+    Back to {{ prob.source_name }}
+  </a>
+  {% else %}
+  <a href="javascript:history.back()"
+     class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white mb-6 transition-colors group">
+    <i data-lucide="arrow-left" class="w-4 h-4 group-hover:-translate-x-0.5 transition-transform"></i>
+    Back
+  </a>
+  {% endif %}
+
+  <!-- Article card -->
+  <article class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+
+    <!-- Article header -->
+    <div class="px-8 py-8 border-b border-slate-800 bg-gradient-to-br from-slate-900 to-slate-900/60">
+      <h1 class="text-2xl lg:text-3xl font-bold text-white leading-snug mb-4">{{ art.title or (prob.name if prob else 'Article') }}</h1>
+
+      {% if prob %}
+      <div class="flex flex-wrap items-center gap-3">
+        {% if prob.difficulty %}
+        <span class="text-xs font-semibold px-3 py-1 rounded-full
+          {% if prob.difficulty|lower == 'easy' %}bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/20
+          {% elif prob.difficulty|lower == 'medium' %}bg-amber-500/15 text-amber-400 ring-1 ring-amber-500/20
+          {% else %}bg-red-500/15 text-red-400 ring-1 ring-red-500/20{% endif %}">
+          {{ prob.difficulty }}
+        </span>
+        {% endif %}
+        {% if prob.leetcode_url %}
+        <a href="{{ prob.leetcode_url }}" target="_blank"
+           class="inline-flex items-center gap-1.5 text-xs text-amber-400 hover:text-amber-300 bg-amber-500/10 px-3 py-1 rounded-full hover:bg-amber-500/20 transition-colors">
+          <i data-lucide="code" class="w-3.5 h-3.5"></i>LeetCode
+        </a>
+        {% endif %}
+        {% if prob.youtube_url %}
+        <a href="{{ prob.youtube_url }}" target="_blank"
+           class="inline-flex items-center gap-1.5 text-xs text-red-400 hover:text-red-300 bg-red-500/10 px-3 py-1 rounded-full hover:bg-red-500/20 transition-colors">
+          <i data-lucide="youtube" class="w-3.5 h-3.5"></i>Watch
+        </a>
+        {% endif %}
+        {% if prob.article_url %}
+        <a href="{{ prob.article_url }}" target="_blank"
+           class="inline-flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300 bg-blue-500/10 px-3 py-1 rounded-full hover:bg-blue-500/20 transition-colors">
+          <i data-lucide="external-link" class="w-3.5 h-3.5"></i>TUF
+        </a>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Article body -->
+    <div class="px-8 lg:px-12 py-10">
+      {% if art.rendered_html %}
+      <div class="article-body">
+        {{ art.rendered_html | safe }}
+      </div>
+      {% elif art.text_content %}
+      <div class="article-body text-slate-300 text-base leading-relaxed whitespace-pre-wrap font-mono text-sm">
+        {{ art.text_content }}
+      </div>
+      {% else %}
+      <div class="text-center py-20 text-slate-500">
+        <i data-lucide="file-x" class="w-12 h-12 mx-auto mb-4 opacity-30"></i>
+        <p class="mb-4">Article content not available offline.</p>
+        {% if prob and prob.article_url %}
+        <a href="{{ prob.article_url }}" target="_blank"
+           class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors">
+          <i data-lucide="external-link" class="w-4 h-4"></i>View on TUF
+        </a>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+
+  </article>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// ── Build language tabs for each code section ──────────────────────────────
+const LANG_NAMES = {
+  cpp: 'C++', c: 'C', java: 'Java', python: 'Python', python3: 'Python',
+  javascript: 'JS', typescript: 'TS', go: 'Go', rust: 'Rust',
+  kotlin: 'Kotlin', swift: 'Swift', cs: 'C#', csharp: 'C#',
+  ruby: 'Ruby', php: 'PHP', sql: 'SQL', bash: 'Bash', sh: 'Shell',
+};
+
+document.querySelectorAll('.code-content').forEach(function(content) {
+  var blocks = Array.from(content.querySelectorAll('.code-block'));
+  if (!blocks.length) return;
+
+  // insert tab bar before the code-content
+  var tabBar = document.createElement('div');
+  tabBar.className = 'lang-tabs-bar';
+
+  blocks.forEach(function(block, idx) {
+    var lang = block.dataset.lang || 'code';
+    var label = LANG_NAMES[lang.toLowerCase()] || lang.toUpperCase();
+
+    var tab = document.createElement('button');
+    tab.className = 'lang-tab' + (block.classList.contains('dsa_article_code_active') ? ' active' : '');
+    tab.textContent = label;
+    tab.dataset.target = idx;
+
+    tab.addEventListener('click', function() {
+      // deactivate all
+      blocks.forEach(function(b) { b.classList.remove('dsa_article_code_active'); });
+      tabBar.querySelectorAll('.lang-tab').forEach(function(t) { t.classList.remove('active'); });
+      // activate clicked
+      blocks[idx].classList.add('dsa_article_code_active');
+      tab.classList.add('active');
+    });
+
+    tabBar.appendChild(tab);
+  });
+
+  content.parentNode.insertBefore(tabBar, content);
+});
+
+// ── Remove TUF's empty lang-container (was React-rendered) ────────────────
+document.querySelectorAll('.code-tabs').forEach(function(el) {
+  el.style.display = 'none';
+});
+</script>
+{% endblock %}

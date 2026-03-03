@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+{% block title %}TUF Archive — Home{% endblock %}
+
+{% block content %}
+
+<!-- Hero -->
+<div class="mb-8">
+  <h1 class="text-4xl font-bold text-white mb-2">TUF Archive</h1>
+  <p class="text-[#888]">Offline mirror of all free content from takeuforward.org</p>
+</div>
+
+<!-- Stats grid -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+  {% set stat_items = [
+    ('problems',    'Problems',           'code-2',     'blue'),
+    ('articles',    'Articles scraped',   'file-text',  'emerald'),
+    ('blogs',       'Blog posts',         'book-open',  'violet'),
+    ('sources',     'Sources',            'layers',     'amber'),
+  ] %}
+  {% for key, label, icon, color in stat_items %}
+  <div class="bg-[#141414] border border-[#252525] rounded-xl p-5 hover:border-slate-700 transition-colors">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-[#888] text-sm">{{ label }}</span>
+      <div class="w-8 h-8 rounded-lg
+        {% if color == 'blue' %}bg-blue-500/10 text-blue-400
+        {% elif color == 'emerald' %}bg-emerald-500/10 text-emerald-400
+        {% elif color == 'violet' %}bg-violet-500/10 text-violet-400
+        {% else %}bg-amber-500/10 text-amber-400{% endif %}
+        flex items-center justify-center">
+        <i data-lucide="{{ icon }}" class="w-4 h-4"></i>
+      </div>
+    </div>
+    <div class="text-2xl font-bold text-white">{{ '{:,}'.format(stats[key]) }}</div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Sources grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+
+  <!-- DSA Sheets -->
+  <div class="bg-[#141414] border border-[#252525] rounded-xl overflow-hidden hover:border-[#FF6D5A]/30 transition-colors">
+    <div class="p-5 border-b border-[#252525] flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center">
+        <i data-lucide="layers" class="w-4 h-4"></i>
+      </div>
+      <h2 class="font-semibold text-white">DSA Sheets</h2>
+    </div>
+    <div class="divide-y divide-slate-800">
+      {% for sid, label in [('sheet_a2z','A2Z DSA'), ('sheet_sde','SDE Sheet'), ('sheet_blind75','Blind 75'), ('sheet_striver79',"Striver's 79")] %}
+      <a href="/problems/{{ sid }}"
+         class="flex items-center justify-between px-5 py-3.5 hover:bg-[#1e1e1e]/50 transition-colors group">
+        <span class="text-[#ccc] group-hover:text-white text-sm">{{ label }}</span>
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-[#666]">{{ pcnt.get(sid, 0) }} problems</span>
+          <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-[#555] group-hover:text-blue-400 transition-colors"></i>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Core CS -->
+  <div class="bg-[#141414] border border-[#252525] rounded-xl overflow-hidden hover:border-[#FF6D5A]/30 transition-colors">
+    <div class="p-5 border-b border-[#252525] flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+        <i data-lucide="cpu" class="w-4 h-4"></i>
+      </div>
+      <h2 class="font-semibold text-white">Core CS</h2>
+    </div>
+    <div class="divide-y divide-slate-800">
+      {% for sid, label in [('cs_cn','Computer Networks'), ('cs_dbms','DBMS'), ('cs_os','Operating Systems')] %}
+      <a href="/problems/{{ sid }}"
+         class="flex items-center justify-between px-5 py-3.5 hover:bg-[#1e1e1e]/50 transition-colors group">
+        <span class="text-[#ccc] group-hover:text-white text-sm">{{ label }}</span>
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-[#666]">{{ pcnt.get(sid, 0) }} topics</span>
+          <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-[#555] group-hover:text-emerald-400 transition-colors"></i>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- System Design + Playlist -->
+  <div class="bg-[#141414] border border-[#252525] rounded-xl overflow-hidden hover:border-[#FF6D5A]/30 transition-colors">
+    <div class="p-5 border-b border-[#252525] flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-violet-500/10 text-violet-400 flex items-center justify-center">
+        <i data-lucide="play-circle" class="w-4 h-4"></i>
+      </div>
+      <h2 class="font-semibold text-white">DSA Playlist</h2>
+    </div>
+    <div class="divide-y divide-slate-800">
+      {% for sid, label in [
+        ('playlist_array','Arrays'), ('playlist_binary_search','Binary Search'),
+        ('playlist_dp','Dynamic Programming'), ('playlist_graph','Graphs'),
+        ('playlist_tree','Trees'),
+      ] %}
+      <a href="/problems/{{ sid }}"
+         class="flex items-center justify-between px-5 py-3.5 hover:bg-[#1e1e1e]/50 transition-colors group">
+        <span class="text-[#ccc] group-hover:text-white text-sm">{{ label }}</span>
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-[#666]">{{ pcnt.get(sid, 0) }}</span>
+          <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-[#555] group-hover:text-violet-400 transition-colors"></i>
+        </div>
+      </a>
+      {% endfor %}
+      <a href="/problems/system_design"
+         class="flex items-center justify-between px-5 py-3.5 hover:bg-[#1e1e1e]/50 transition-colors group">
+        <span class="text-[#ccc] group-hover:text-white text-sm">System Design</span>
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-[#666]">{{ pcnt.get('system_design', 0) }}</span>
+          <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-[#555] group-hover:text-violet-400 transition-colors"></i>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- CP Sheet -->
+  <div class="bg-[#141414] border border-[#252525] rounded-xl overflow-hidden hover:border-[#FF6D5A]/30 transition-colors">
+    <div class="p-5 border-b border-[#252525] flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-orange-500/10 text-orange-400 flex items-center justify-center">
+        <i data-lucide="zap" class="w-4 h-4"></i>
+      </div>
+      <h2 class="font-semibold text-white">CP Sheet</h2>
+    </div>
+    <div class="divide-y divide-slate-800">
+      <a href="/problems/cp_striver_cp_sheet"
+         class="flex items-center justify-between px-5 py-3.5 hover:bg-[#1e1e1e]/50 transition-colors group">
+        <span class="text-[#ccc] group-hover:text-white text-sm">Striver's CP Sheet</span>
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-[#666]">{{ pcnt.get('cp_striver_cp_sheet', 0) }} problems</span>
+          <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-[#555] group-hover:text-orange-400 transition-colors"></i>
+        </div>
+      </a>
+      <div class="px-5 py-3 text-xs text-[#555]">
+        Codeforces problems for coding-round prep
+      </div>
+    </div>
+  </div>
+
+  <!-- Interview Experiences -->
+  <div class="bg-[#141414] border border-[#252525] rounded-xl overflow-hidden hover:border-[#FF6D5A]/30 transition-colors">
+    <div class="p-5 border-b border-[#252525] flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-rose-500/10 text-rose-400 flex items-center justify-center">
+        <i data-lucide="briefcase" class="w-4 h-4"></i>
+      </div>
+      <h2 class="font-semibold text-white">Interview Experiences</h2>
+    </div>
+    <div class="divide-y divide-slate-800">
+      <a href="/interviews"
+         class="flex items-center justify-between px-5 py-3.5 hover:bg-[#1e1e1e]/50 transition-colors group">
+        <span class="text-[#ccc] group-hover:text-white text-sm">All Experiences</span>
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-[#666]">{{ pcnt.get('interview', 0) }} entries</span>
+          <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-[#555] group-hover:text-rose-400 transition-colors"></i>
+        </div>
+      </a>
+      {% for co in [('Amazon','/interviews?company=Amazon'), ('Google','/interviews?company=Google'), ('Microsoft','/interviews?company=Microsoft')] %}
+      <a href="{{ co[1] }}"
+         class="flex items-center justify-between px-5 py-3.5 hover:bg-[#1e1e1e]/50 transition-colors group">
+        <span class="text-[#ccc] group-hover:text-white text-sm">{{ co[0] }}</span>
+        <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-[#555] group-hover:text-rose-400 transition-colors"></i>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Blogs -->
+  <div class="bg-[#141414] border border-[#252525] rounded-xl overflow-hidden md:col-span-2 xl:col-span-3 hover:border-[#FF6D5A]/30 transition-colors">
+    <div class="p-5 border-b border-[#252525] flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center">
+          <i data-lucide="book-open" class="w-4 h-4"></i>
+        </div>
+        <h2 class="font-semibold text-white">Blogs by Category</h2>
+      </div>
+      <a href="/blogs" class="text-xs text-blue-400 hover:underline">View all →</a>
+    </div>
+    <div class="p-5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+      {% for cat in blog_cats %}
+      <a href="/blogs/{{ cat.category }}"
+         class="flex items-center justify-between bg-[#1e1e1e]/50 hover:bg-[#1e1e1e] rounded-lg px-3 py-2 transition-colors group">
+        <span class="text-[#ccc] group-hover:text-white text-sm truncate">{{ cat.category }}</span>
+        <span class="ml-2 text-xs text-[#666] shrink-0">{{ cat.cnt }}</span>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

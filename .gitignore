@@ -1,0 +1,35 @@
+# Large auto-generated assets (images are already stored as BLOBs in the DB)
+assets/
+
+# Empty stub DB inside the package
+tuf_scraper/tuf.db
+
+# Logs and temp files
+output.logs
+output/
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+.eggs/
+
+# Playwright / browser automation
+.playwright-mcp/
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Secrets
+.env
+.env.*

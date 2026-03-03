@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}TUF Archive{% endblock %}</title>
+
+  <!-- Tailwind + Typography -->
+  <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand:  '#FF6D5A',
+            salmon: '#FF6D5A',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+
+  <!-- Alpine.js for lightweight interactivity -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+  <!-- Inter font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Lucide icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; }
+
+    /* custom scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0d0d0d; }
+    ::-webkit-scrollbar-thumb { background: #2e2e2e; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #FF6D5A; }
+
+    /* active nav item */
+    .nav-active { color: #FF6D5A !important; background: rgba(255,109,90,0.12) !important; }
+    .nav-active:hover { background: rgba(255,109,90,0.18) !important; }
+  </style>
+</head>
+
+<body class="bg-[#0d0d0d] text-slate-100 min-h-screen flex" x-data="{ sidebarOpen: true, frOpen: false, frTab: 'form' }">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────────────────── -->
+  <aside
+    class="fixed top-0 left-0 h-full z-30 flex flex-col bg-[#111] border-r border-[#222] transition-all duration-200"
+    :class="sidebarOpen ? 'w-60' : 'w-14'"
+  >
+    <!-- Logo -->
+    <a href="/" class="flex items-center gap-3 px-4 py-5 border-b border-[#222] shrink-0">
+      <div class="w-7 h-7 rounded-lg bg-[#FF6D5A] flex items-center justify-center shrink-0">
+        <i data-lucide="code-2" class="w-4 h-4 text-white"></i>
+      </div>
+      <span class="font-bold text-white text-sm tracking-tight whitespace-nowrap"
+            x-show="sidebarOpen" x-cloak><span class="text-[#FF6D5A]">TUF</span> Archive</span>
+    </a>
+
+    <!-- Nav -->
+    <nav class="flex-1 overflow-y-auto py-3 px-2 space-y-0.5 text-sm">
+
+      <!-- Home -->
+      <a href="/"
+         class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[#aaa] hover:bg-[#1e1e1e] hover:text-white transition-colors
+                {% if request.url.path == '/' %}nav-active{% endif %}">
+        <i data-lucide="home" class="w-4 h-4 shrink-0"></i>
+        <span x-show="sidebarOpen" x-cloak class="truncate">Home</span>
+      </a>
+
+      <!-- DSA Sheets -->
+      <div x-data="{ open: {{ 'true' if 'sheet_' in (request.url.path or '') else 'false' }} }">
+        <button @click="open = !open"
+                class="w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-[#aaa] hover:bg-[#1e1e1e] hover:text-white transition-colors">
+          <i data-lucide="layers" class="w-4 h-4 shrink-0"></i>
+          <span x-show="sidebarOpen" x-cloak class="truncate flex-1 text-left">DSA Sheets</span>
+          <i x-show="sidebarOpen" x-cloak data-lucide="chevron-down"
+             class="w-3 h-3 shrink-0 transition-transform duration-150"
+             :class="open ? 'rotate-180' : ''"></i>
+        </button>
+        <div x-show="open && sidebarOpen" x-cloak class="ml-3 pl-3 border-l border-[#2a2a2a] space-y-0.5 mt-0.5">
+          {% set sheet_links = [
+            ('sheet_a2z',     'A2Z DSA'),
+            ('sheet_sde',     'SDE Sheet'),
+            ('sheet_blind75', 'Blind 75'),
+            ('sheet_striver79', "Striver's 79"),
+          ] %}
+          {% for sid, label in sheet_links %}
+          <a href="/problems/{{ sid }}"
+             class="flex items-center gap-2 rounded-md px-2 py-1.5 text-[#888] hover:text-white hover:bg-[#1e1e1e] transition-colors
+                    {% if request.url.path == '/problems/' + sid %}nav-active{% endif %}">
+            <span class="truncate">{{ label }}</span>
+            {% if sid in pcnt %}<span class="ml-auto text-xs text-[#555] shrink-0">{{ pcnt[sid] }}</span>{% endif %}
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Core CS -->
+      <div x-data="{ open: {{ 'true' if 'cs_' in (request.url.path or '') else 'false' }} }">
+        <button @click="open = !open"
+                class="w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-[#aaa] hover:bg-[#1e1e1e] hover:text-white transition-colors">
+          <i data-lucide="cpu" class="w-4 h-4 shrink-0"></i>
+          <span x-show="sidebarOpen" x-cloak class="truncate flex-1 text-left">Core CS</span>
+          <i x-show="sidebarOpen" x-cloak data-lucide="chevron-down"
+             class="w-3 h-3 shrink-0 transition-transform duration-150"
+             :class="open ? 'rotate-180' : ''"></i>
+        </button>
+        <div x-show="open && sidebarOpen" x-cloak class="ml-3 pl-3 border-l border-[#2a2a2a] space-y-0.5 mt-0.5">
+          {% set cs_links = [
+            ('cs_cn',   'Computer Networks'),
+            ('cs_dbms', 'DBMS'),
+            ('cs_os',   'Operating Systems'),
+          ] %}
+          {% for sid, label in cs_links %}
+          <a href="/problems/{{ sid }}"
+             class="flex items-center gap-2 rounded-md px-2 py-1.5 text-[#888] hover:text-white hover:bg-[#1e1e1e] transition-colors
+                    {% if request.url.path == '/problems/' + sid %}nav-active{% endif %}">
+            <span class="truncate">{{ label }}</span>
+            {% if sid in pcnt %}<span class="ml-auto text-xs text-[#555] shrink-0">{{ pcnt[sid] }}</span>{% endif %}
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- System Design -->
+      <a href="/problems/system_design"
+         class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[#aaa] hover:bg-[#1e1e1e] hover:text-white transition-colors
+                {% if request.url.path == '/problems/system_design' %}nav-active{% endif %}">
+        <i data-lucide="network" class="w-4 h-4 shrink-0"></i>
+        <span x-show="sidebarOpen" x-cloak class="truncate flex-1">System Design</span>
+        {% if 'system_design' in pcnt %}<span x-show="sidebarOpen" x-cloak class="text-xs text-[#555]">{{ pcnt['system_design'] }}</span>{% endif %}
+      </a>
+
+      <!-- DSA Playlist -->
+      <div x-data="{ open: {{ 'true' if 'playlist_' in (request.url.path or '') else 'false' }} }">
+        <button @click="open = !open"
+                class="w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-[#aaa] hover:bg-[#1e1e1e] hover:text-white transition-colors">
+          <i data-lucide="play-circle" class="w-4 h-4 shrink-0"></i>
+          <span x-show="sidebarOpen" x-cloak class="truncate flex-1 text-left">DSA Playlist</span>
+          <i x-show="sidebarOpen" x-cloak data-lucide="chevron-down"
+             class="w-3 h-3 shrink-0 transition-transform duration-150"
+             :class="open ? 'rotate-180' : ''"></i>
+        </button>
+        <div x-show="open && sidebarOpen" x-cloak class="ml-3 pl-3 border-l border-[#2a2a2a] space-y-0.5 mt-0.5">
+          {% set pl_links = [
+            ('playlist_array',         'Arrays'),
+            ('playlist_binary_search', 'Binary Search'),
+            ('playlist_dp',            'Dynamic Programming'),
+            ('playlist_graph',         'Graphs'),
+            ('playlist_linked_list',   'Linked List'),
+            ('playlist_recursion',     'Recursion'),
+            ('playlist_stack_queue',   'Stack & Queue'),
+            ('playlist_string',        'Strings'),
+            ('playlist_tree',          'Trees'),
+          ] %}
+          {% for sid, label in pl_links %}
+          <a href="/problems/{{ sid }}"
+             class="flex items-center gap-2 rounded-md px-2 py-1.5 text-[#888] hover:text-white hover:bg-[#1e1e1e] transition-colors
+                    {% if request.url.path == '/problems/' + sid %}nav-active{% endif %}">
+            <span class="truncate">{{ label }}</span>
+            {% if sid in pcnt %}<span class="ml-auto text-xs text-[#555] shrink-0">{{ pcnt[sid] }}</span>{% endif %}
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- CP Sheet -->
+      <a href="/problems/cp_striver_cp_sheet"
+         class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[#aaa] hover:bg-[#1e1e1e] hover:text-white transition-colors
+                {% if request.url.path == '/problems/cp_striver_cp_sheet' %}nav-active{% endif %}">
+        <i data-lucide="zap" class="w-4 h-4 shrink-0"></i>
+        <span x-show="sidebarOpen" x-cloak class="truncate flex-1">CP Sheet</span>
+        {% if 'cp_striver_cp_sheet' in pcnt %}<span x-show="sidebarOpen" x-cloak class="text-xs text-[#555]">{{ pcnt['cp_striver_cp_sheet'] }}</span>{% endif %}
+      </a>
+
+      <!-- Interview Experiences -->
+      <a href="/interviews"
+         class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[#aaa] hover:bg-[#1e1e1e] hover:text-white transition-colors
+                {% if '/interview' in request.url.path %}nav-active{% endif %}">
+        <i data-lucide="briefcase" class="w-4 h-4 shrink-0"></i>
+        <span x-show="sidebarOpen" x-cloak class="truncate flex-1">Interviews</span>
+      </a>
+
+      <!-- Blogs -->
+      <a href="/blogs"
+         class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[#aaa] hover:bg-[#1e1e1e] hover:text-white transition-colors
+                {% if '/blog' in request.url.path %}nav-active{% endif %}">
+        <i data-lucide="book-open" class="w-4 h-4 shrink-0"></i>
+        <span x-show="sidebarOpen" x-cloak class="truncate flex-1">Blogs</span>
+      </a>
+      <a href="/search"
+         class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[#aaa] hover:bg-[#1e1e1e] hover:text-white transition-colors
+                {% if request.url.path == '/search' %}nav-active{% endif %}">
+        <i data-lucide="search" class="w-4 h-4 shrink-0"></i>
+        <span x-show="sidebarOpen" x-cloak class="truncate">Search</span>
+      </a>
+
+    </nav>
+
+    <!-- Toggle button -->
+    <button @click="sidebarOpen = !sidebarOpen"
+            class="flex items-center justify-center py-4 border-t border-[#222] text-[#555] hover:text-[#FF6D5A] transition-colors shrink-0">
+      <i :data-lucide="sidebarOpen ? 'panel-left-close' : 'panel-left-open'" class="w-4 h-4"></i>
+    </button>
+  </aside>
+
+  <!-- ── Main area ──────────────────────────────────────────────────────────── -->
+  <div class="flex-1 flex flex-col min-h-screen transition-all duration-200"
+       :class="sidebarOpen ? 'ml-60' : 'ml-14'">
+
+    <!-- Top header -->
+    <header class="sticky top-0 z-20 bg-[#0d0d0d]/95 backdrop-blur border-b border-[#222] px-6 py-3 flex items-center gap-4">
+      <!-- search bar -->
+      <form action="/search" method="get" class="flex-1 max-w-lg">
+        <div class="relative">
+          <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#555] pointer-events-none"></i>
+          <input
+            name="q"
+            value="{{ q if q is defined else '' }}"
+            placeholder="Search problems, articles, blogs…"
+            class="w-full bg-[#141414] border border-[#2e2e2e] rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder-[#555]
+                   focus:outline-none focus:ring-2 focus:ring-[#FF6D5A]/50 focus:border-[#FF6D5A]/40 transition-all"
+          />
+        </div>
+      </form>
+
+      <!-- Feature Request button -->
+      <button @click="frOpen = true; frTab = 'form'"
+              class="shrink-0 flex items-center gap-1.5 text-xs bg-[#1a1a1a] hover:bg-[#222] border border-[#333] rounded-lg px-3 py-2 text-[#ccc] hover:text-white transition-colors">
+        <i data-lucide="lightbulb" class="w-3.5 h-3.5 text-amber-400"></i>
+        <span class="hidden sm:inline">Feature Request</span>
+      </button>
+
+      <!-- GitHub Repo button -->
+      <a href="https://github.com/Ashok-19/TUF-Archive" target="_blank"
+         class="shrink-0 flex items-center gap-2 text-xs bg-[#1a1a1a] hover:bg-[#222] border border-[#333] hover:border-[#FF6D5A]/50 rounded-lg px-3 py-2 text-[#ccc] hover:text-[#FF6D5A] transition-colors">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v 3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+        </svg>
+        <span id="github-stars" class="hidden sm:inline">Stars</span>
+      </a>
+
+      <!-- breadcrumb / page title -->
+      <div class="ml-auto flex items-center gap-2 text-sm text-[#555]">
+        {% block header_extra %}{% endblock %}
+      </div>
+    </header>
+
+    <!-- Page content -->
+    <main class="flex-1 p-6 lg:p-8">
+      {% block content %}{% endblock %}
+    </main>
+
+  </div>
+
+  <script>
+    // init lucide icons
+    document.addEventListener('DOMContentLoaded', () => lucide.createIcons());
+    document.addEventListener('alpine:initialized', () => {
+      setTimeout(() => lucide.createIcons(), 50);
+    });
+
+    // Fetch and display GitHub stars
+    async function updateGitHubStars() {
+      try {
+        const response = await fetch('https://api.github.com/repos/Ashok-19/TUF-Archive');
+        const data = await response.json();
+        const starsEl = document.getElementById('github-stars');
+        if (starsEl && data.stargazers_count) {
+          const stars = data.stargazers_count;
+          starsEl.textContent = (stars >= 1000 ? (stars/1000).toFixed(1) + 'k' : stars) + ' ⭐';
+        }
+      } catch (e) {
+        console.log('Could not fetch GitHub stars');
+      }
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', updateGitHubStars);
+    } else {
+      updateGitHubStars();
+    }
+  </script>
+  {% block extra_scripts %}{% endblock %}
+
+  <!-- ── Feature Request Modal ──────────────────────────────────────────── -->
+  <div x-show="frOpen" x-cloak
+       class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+       @click.self="frOpen = false"
+       x-transition:enter="transition ease-out duration-200"
+       x-transition:enter-start="opacity-0"
+       x-transition:enter-end="opacity-100"
+       x-transition:leave="transition ease-in duration-150"
+       x-transition:leave-start="opacity-100"
+       x-transition:leave-end="opacity-0">
+
+    <div class="bg-[#141414] border border-[#2a2a2a] rounded-2xl w-full max-w-lg shadow-2xl"
+         @click.stop
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100">
+
+      <!-- Modal header -->
+      <div class="flex items-center justify-between px-5 py-4 border-b border-[#252525]">
+        <div class="flex items-center gap-2">
+          <i data-lucide="lightbulb" class="w-4 h-4 text-amber-400"></i>
+          <h2 class="font-semibold text-white">Feature Request</h2>
+        </div>
+        <button @click="frOpen = false" class="text-[#666] hover:text-white transition-colors">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Tabs -->
+      <div class="flex border-b border-[#252525]">
+        <button @click="frTab = 'form'"
+                :class="frTab === 'form' ? 'border-[#FF6D5A] text-[#FF6D5A]' : 'border-transparent text-[#666] hover:text-[#ccc]'"
+                class="px-5 py-3 text-sm font-medium border-b-2 transition-colors flex items-center gap-2">
+          <i data-lucide="send" class="w-3.5 h-3.5"></i>
+          Send Message
+        </button>
+        <button @click="frTab = 'github'"
+                :class="frTab === 'github' ? 'border-[#FF6D5A] text-[#FF6D5A]' : 'border-transparent text-[#666] hover:text-[#ccc]'"
+                class="px-5 py-3 text-sm font-medium border-b-2 transition-colors flex items-center gap-2">
+          <i data-lucide="github" class="w-3.5 h-3.5"></i>
+          GitHub Issue
+        </button>
+      </div>
+
+      <!-- Send Message tab -->
+      <div x-show="frTab === 'form'" class="p-5"
+           x-data="{ msg: '', sent: false, err: '', loading: false }">
+        <p class="text-[#888] text-sm mb-4">Describe the feature you'd like to see. It'll be sent directly to the maintainer.</p>
+        <textarea x-model="msg" rows="5"
+                  placeholder="I'd love to have…"
+                  class="w-full bg-[#1a1a1a] border border-[#2e2e2e] rounded-xl px-4 py-3 text-sm text-white placeholder-[#555] focus:outline-none focus:ring-2 focus:ring-[#FF6D5A]/50 resize-none"></textarea>
+        <div x-show="err" x-text="err" class="mt-2 text-xs text-red-400"></div>
+        <div x-show="sent" class="mt-2 text-xs text-emerald-400 flex items-center gap-1">
+          <i data-lucide="check-circle" class="w-3 h-3"></i>
+          <span>Sent! Thanks for the suggestion.</span>
+        </div>
+        <div class="mt-4 flex justify-end">
+          <button
+            @click="
+              if (!msg.trim()) { err = 'Please write something first.'; return; }
+              loading = true; err = '';
+              fetch('/api/feature-request', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'feature=' + encodeURIComponent(msg)
+              }).then(r => r.json()).then(d => {
+                loading = false;
+                if (d.ok) { sent = true; msg = ''; }
+                else { err = d.error || 'Failed to send. Try the GitHub Issue tab instead.'; }
+              }).catch(() => { loading = false; err = 'Network error. Try the GitHub Issue tab instead.'; })"
+            :disabled="loading"
+            class="flex items-center gap-2 bg-[#FF6D5A] hover:bg-[#ff8570] disabled:opacity-50 text-white text-sm font-semibold px-5 py-2 rounded-lg transition-colors">
+            <i x-show="loading" data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i>
+            <span>Send</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- GitHub Issue tab -->
+      <div x-show="frTab === 'github'" class="p-5">
+        <p class="text-[#bbb] text-sm mb-5">Open a feature request on GitHub — no email needed, fully public.</p>
+        <ol class="space-y-4">
+          <li class="flex gap-3 text-sm text-[#888]">
+            <span class="shrink-0 w-6 h-6 rounded-full bg-[#FF6D5A]/15 text-[#FF6D5A] text-xs flex items-center justify-center font-bold mt-0.5">1</span>
+            <span>Click the link below — it opens the <strong class="text-white">New Issue</strong> page directly</span>
+          </li>
+          <li class="flex gap-3 text-sm text-[#888]">
+            <span class="shrink-0 w-6 h-6 rounded-full bg-[#FF6D5A]/15 text-[#FF6D5A] text-xs flex items-center justify-center font-bold mt-0.5">2</span>
+            <span>Set the title to <code class="bg-[#1e1e1e] text-[#ccc] px-1.5 py-0.5 rounded text-xs">Feature Request: your idea</code></span>
+          </li>
+          <li class="flex gap-3 text-sm text-[#888]">
+            <span class="shrink-0 w-6 h-6 rounded-full bg-[#FF6D5A]/15 text-[#FF6D5A] text-xs flex items-center justify-center font-bold mt-0.5">3</span>
+            <span>Describe the feature in the body — what it does and why it would be useful</span>
+          </li>
+          <li class="flex gap-3 text-sm text-[#888]">
+            <span class="shrink-0 w-6 h-6 rounded-full bg-[#FF6D5A]/15 text-[#FF6D5A] text-xs flex items-center justify-center font-bold mt-0.5">4</span>
+            <span>Click <strong class="text-white">Submit new issue</strong></span>
+          </li>
+        </ol>
+        <a href="https://github.com/Ashok-19/TUF-Archive/issues/new" target="_blank"
+           class="mt-5 flex items-center justify-center gap-2 bg-[#1a1a1a] hover:bg-[#222] border border-[#333] rounded-xl px-4 py-3.5 text-[#ccc] text-sm font-medium transition-colors">
+          <i data-lucide="github" class="w-4 h-4"></i>
+          Open New Issue on GitHub
+          <i data-lucide="external-link" class="w-3 h-3 text-[#666]"></i>
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+</body>
+</html>
