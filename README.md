@@ -163,7 +163,7 @@ scrape_queue         resumable URL queue (pending / processing / done / failed)
 - `scrape_queue` enables **resumable article scraping** — re-run `--phase articles` after a failure and it resumes where it left off (max 3 attempts per URL)
 - Images are stored **both** as BLOBs in the DB and as files under `assets/images/<article_id>/`
 - Plus-only (`/plus/`) links are automatically excluded
-- `tuf_data.db` is tracked via Git LFS (~1.2 GB); `assets/` is git-ignored (images are already in the DB as BLOBs)
+- `tuf_data.db` is tracked via Git LFS
 
 ---
 
