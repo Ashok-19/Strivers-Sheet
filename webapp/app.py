@@ -26,7 +26,7 @@ import uvicorn
 # ── email config (set env vars to enable the feature-request form) ───────────
 SMTP_USER    = os.environ.get("SMTP_USER", "")
 SMTP_PASS    = os.environ.get("SMTP_PASS", "")
-FEATURE_MAIL = "ashokraja1910@gmail.com"
+FEATURE_MAIL = "abcd@gmail.com"
 
 # ── paths ──────────────────────────────────────────────────────────────────────
 BASE_DIR   = os.path.dirname(os.path.abspath(__file__))
