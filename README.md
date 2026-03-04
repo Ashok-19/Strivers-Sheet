@@ -65,6 +65,8 @@ playwright install chromium
 
 ## Usage
 
+**Note**: *No need to run the scraper if you cloned the repo*
+
 ### Run the full scraper
 ```bash
 python main.py                               # Takes longer time
