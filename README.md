@@ -17,6 +17,28 @@ A scraper + local web viewer for all **free** content on [takeuforward.org](http
 
 ---
 
+# Preview
+
+### Home Page
+
+![Home Page](assets/preview/a2z-sheet.png)
+
+### A2Z sheet
+
+![A2Z sheet](assets/preview/a2z-sheet.png)
+
+### Interview Experiences
+
+![Interview Experiences](assets/preview/interview-experiences.png)
+
+### Blogs
+
+![Blogs](assets/preview/blogs.png)
+
+### Search
+
+![Search](assets/preview/search.png)
+
 ## How It Works
 
 TUF is a **Next.js App Router** application. Page data is embedded in
@@ -34,6 +56,7 @@ TUF is a **Next.js App Router** application. Page data is embedded in
 ## Setup
 
 ```bash
+git clone https://github.com/Ashok-19/TUF-Archive.git
 pip install -r requirements.txt
 playwright install chromium
 ```
@@ -44,19 +67,19 @@ playwright install chromium
 
 ### Run the full scraper
 ```bash
-python main.py
+python main.py                               # Takes longer time
 ```
 
 ### Run a specific phase
 ```bash
-python main.py --phase sheets        # DSA sheets
-python main.py --phase cs            # Core CS
-python main.py --phase sd            # System Design
-python main.py --phase playlist      # DSA Playlist
-python main.py --phase blogs         # Blogs
-python main.py --phase cp            # Striver's CP Sheet
-python main.py --phase interview     # Interview experiences
-python main.py --phase articles      # Fetch all queued article content
+python main.py --phase sheets                # DSA sheets
+python main.py --phase cs                    # Core CS
+python main.py --phase sd                    # System Design
+python main.py --phase playlist              # DSA Playlist
+python main.py --phase blogs                 # Blogs
+python main.py --phase cp                    # Striver's CP Sheet
+python main.py --phase interview             # Interview experiences
+python main.py --phase articles              # Fetch all queued article content
 python main.py --phase articles --limit 50   # Process at most 50 articles (resumable)
 ```
 
@@ -81,7 +104,11 @@ The viewer includes:
 ```
 main.py                              Entry point / orchestrator
 requirements.txt
-tuf_data.db                          SQLite database (~1.2 GB, tracked via Git LFS)
+tuf_data.db                          SQLite database 
+
+assets/
+  images/                            Image assets of articles
+  preview/                           README Preview images
 
 tuf_scraper/
   db/
@@ -147,3 +174,8 @@ scrape_queue         resumable URL queue (pending / processing / done / failed)
 **Rate limiting** — increase `polite_delay` in `base.py` (default 1.5 s) or add random jitter
 
 **Content locked behind TUF+** — the scraper automatically skips URLs containing `/plus/`
+
+
+## Support 
+
+ ***𓃠 Kindly Star the Repo if you like this work***
